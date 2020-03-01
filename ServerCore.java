@@ -45,7 +45,7 @@ public class ServerCore extends Thread
 	
 	public synchronized void finish() 
 	{
-		ChatModel.clearAll();
+		Model.clearAll();
 		stop = true;
 	}
 }
