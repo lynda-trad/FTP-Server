@@ -1,51 +1,64 @@
 import java.io.IOException;
-import java.net.ServerSocket;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 
 public class ServerCore extends Thread
-{	
-	private int port;
-	ServerSocket ss;
-	private boolean stop = false;
-	private IChatLogger logger = null;
-	
-	public ServerCore(int port) throws IOException 
-	{
-		this.port = port;
-		logger = new TextChatLogger();
-		logger.systemMessage("Server started...");
-		this.start();
-	}
-	
-	public void run() 
-	{
-		try (ServerSocket ss = new ServerSocket(port)) 
-		{
-			ss.setSoTimeout(1000);
-			while (!stop) 
-			{
-				try 
-				{
-					Socket s = ss.accept();
-					logger.clientConnected(s.toString());
-					new Thread(new HandleClient(s, logger)).start();
-				} 
-				catch (SocketTimeoutException ex) 
-				{
-				}
-			}
+{
+    private Socket         client = null;
+    private PrintWriter    output;
+    private BufferedReader input;
+
+    public ServerCore(Socket client)
+    {
+        this.client = client;
+    }
+
+    private void InitConnection()
+    {
+        output.print("220 Welcome.\r\n");
+        output.flush();
+        System.out.print("Connection accepted");
+    }
+
+    public void run()
+    {
+        try
+        {
+            output = new PrintWriter(client.getOutputStream(), true);
+			InitConnection();
+			
+            while (true) //temporary
+            {
+                input = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                System.out.print("Reader and writer created. ");
+
+                String inString;
+                while ((inString = input.readLine()) == null) ;
+                System.out.println("Read command " + inString);
+
+                String outString = Command.run(inString, output);
+                System.out.println("Server sending:" + outString);
+                output.print(outString + "\r\n");
+                output.flush();
+            }
 		} 
-		catch (IOException e) 
-		{
-			System.out.println("Could not bind port " + port);
-			//logger.getLogger(ServerCore.class.getName()).log(Level.SEVERE, null, e);
-		}
-	}
-	
-	public synchronized void finish() 
-	{
-		Model.clearAll();
-		stop = true;
-	}
+		catch (IOException e)
+        {
+            e.printStackTrace();
+		} 
+		finally
+        {
+            try
+            {
+                client.close();
+			} 
+			catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+			System.out.println("Client thread closed.");
+        }
+    }
 }
