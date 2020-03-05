@@ -8,9 +8,9 @@ public class ServerMain
 {
     public static int ServerPort = 1212;
 
-    public static AtomicInteger numThreads = new AtomicInteger(0);
+    private static AtomicInteger numThreads = new AtomicInteger(0);
 
-    public static ArrayList<Thread> list   = new ArrayList<Thread>();
+    private static ArrayList<Thread> list   = new ArrayList<Thread>();
 
     public static boolean bye = false;
 

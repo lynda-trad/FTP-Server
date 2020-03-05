@@ -1,4 +1,5 @@
 import java.io.PrintWriter;
+import java.util.EventListener;
 
 public class Command
 {
@@ -48,6 +49,22 @@ public class Command
             return "431 Log-on unsuccessful. User and/or password invalid.";
             //return "432 User not valid for this service.";
         }
+    }
+
+    public static String CommandAuth(String mecanism)
+    {
+        return "234 Security data exchange complete.";
+        /*
+        return "334 [ADAT=base64data]";
+
+        return "504 Request denied for policy reasons.";
+        return "534 Request denied for policy reasons.";
+        
+            234
+            334
+            502, 504, 534, 431
+            500, 501, 421
+        */
     }
     
     public static String CommandAppe(String filename)
@@ -130,6 +147,12 @@ public class Command
         //return "232 Logout command noted, will complete when transfer done.";
     }
 
+    public static String CommandQuit()
+    {
+        ServerMain.bye = true;
+        return "221 Control canal closed by the service.";
+    }
+
     public static String CommandRetr(String filename)
     {
         return "125 Transfert starting.";
@@ -161,9 +184,19 @@ public class Command
             return CommandPass(command);
         }
         
-        else if (command[0].equals("BYE") || command[0].equals("QUIT"))
+        else if(command[0].equals("AUTH"))
+        {
+            return CommandAuth(command[1]);
+        }
+
+        else if (command[0].equals("BYE"))
         {
             return CommandBye();
+        }
+
+        else if(command[0].equals("QUIT"))
+        {
+            return CommandQuit();            
         }
 
         else if (command[0].equals("LIST"))

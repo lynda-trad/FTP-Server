@@ -29,10 +29,9 @@ public class ServerCore extends Thread
             output = new PrintWriter(client.getOutputStream(), true);
 			InitConnection();
 			
-            while (true) //temporary
+            while (!ServerMain.bye) 
             {
                 input = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                //System.out.print("Reader and writer created. ");
 
                 String inString;
                 while ((inString = input.readLine()) == null) ;
