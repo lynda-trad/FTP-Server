@@ -31,7 +31,7 @@ public class ServerMain
 	
 	public static void main(String[] args)
     {
-        int ServerPort = 1234;
+        int ServerPort = 1212;
         AtomicInteger numThreads = new AtomicInteger(0);
         ArrayList<Thread> list   = new ArrayList<Thread>();
 
