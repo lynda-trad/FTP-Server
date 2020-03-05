@@ -7,12 +7,23 @@ import java.net.Socket;
 public class ServerCore extends Thread
 {
     private Socket         client = null;
-    private PrintWriter    output;
-    private BufferedReader input;
+    private static PrintWriter    output;
+    private static BufferedReader input;
 
     public ServerCore(Socket client)
     {
         this.client = client;
+    }
+
+    public static void send(String str)
+    {
+        output.print(str + "\r\n");
+        output.flush();
+    }
+
+    public static void sendFilesList()
+    {
+        send("-rwxr-xr-x 1 100 100 14757 a.out\r\n");
     }
 
     private void InitConnection()
@@ -37,11 +48,14 @@ public class ServerCore extends Thread
                 while ((inString = input.readLine()) == null) ;
                 System.out.println("Read command : " + inString+ '\n');
 
+                Command.run(inString, output);
+                /*
                 String outString = Command.run(inString, output);
                 System.out.println("Server sending:" + outString + '\n');
 
                 output.print(outString + "\r\n");
                 output.flush();
+                */
             }
 
 		} 
