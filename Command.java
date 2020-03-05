@@ -49,6 +49,30 @@ public class Command
             //return "432 User not valid for this service.";
         }
     }
+    
+    public static String CommandAppe(String filename)
+    {
+        // append the file 
+        return "250 FTP file transfer started correctly.";
+    }
+
+    public static String CommandDele(String filename)
+    {
+        // delete the file 
+        return "254 Delete completed."; 
+    }
+
+    public static String CommandMKD(String newDir)
+    {
+        //create newDir
+        return "257 Creating new directory";
+    }
+
+    public static String CommandRMD(String rmDir)
+    {
+        //remove rmDir
+        return "250 FTP file transfer started correctly.";
+    }
 
     public static void CommandList()
     {
@@ -60,7 +84,8 @@ public class Command
     public static String CommandBye()
     {
         ServerMain.bye = true;
-        return "231 User is \"logged out\". Service terminated." ;
+        return "231 User is \"logged out\". Service terminated.";
+        //return "232 Logout command noted, will complete when transfer done.";
     }
 
     public static String run(String commandString, PrintWriter output)
@@ -77,7 +102,7 @@ public class Command
             return CommandPass(command);
         }
         
-        else if (command[0].equals("BYE"))
+        else if (command[0].equals("BYE") || command[0].equals("QUIT"))
         {
             return CommandBye();
         }
@@ -87,37 +112,66 @@ public class Command
             CommandList();
         }
         
-        else if (command[0].equals("RETR"))
+        else if (command[0].equals("RETR")) //Retrieve a copy of the file
         {
             
         }
         
-        else if (command[0].equals("PWD"))
+        else if (command[0].equals("PWD")) // Print working directory.
         {
-            return "257 " + dir + " comment ";
+            return "257 " + cwd + " comment ";
         }
         
         else if (command[0].equals("TYPE") && command[1].equals("I"))
         {
             return "200 TYPE is now 8-bit binary.";
         }
-        
-        else if (command[0].equals("EPRT"))
+   
+        else if (command[0].equals("APPE")) // Append the file
         {
-            return "200 Command okay.";
+            CommandAppe(command[1]);
         }
-        
-        else if (command[0].equals("CWD")) // go into directory command[1]
+
+        else if (command[0].equals("DELE")) // Delete the file.
         {
-            dir = command[1];
+            CommandDele(command[1]);
+        }
+
+        else if (command[0].equals("CWD")) // Change working directory.
+        {
+            cwd = command[1];
             return "250 FTP file transfer started correctly.";
         }
+
+        else if ( command[0].equals("MKD") || command[0].equals("XMKD") ) // create a directory
+        {
+            CommandMKD(command[1]);
+        }
+
+        else if ( command[0].equals("RMD") || command[0].equals("XRMD") ) // remove a directory
+        {
+            CommandRMD(command[1]);
+        }
+
+        else if (command[0].equals("RMDA")) // remove a directory tree
+        {
+            String rmDir = command[1];
+            //remove rmDir
+            return "250 FTP file transfer started correctly.";
+        }
+
 /*
-        else if (command[0].equals("PORT"))
+        else if (command[0].equals("PORT")) //Specifies an address and port to which the server should connect.
         {
             CommandPort(command);
         }
-*/
+
+        else if (command[0].equals("EPRT")) //Specifies an extended address and port to which the server should connect.
+        {
+            return "200 Command okay.";
+        }
+        */
+
         return "502 Command not implemented.";
     }
 }
