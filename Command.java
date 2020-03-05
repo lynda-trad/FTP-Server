@@ -2,7 +2,7 @@ import java.io.PrintWriter;
 
 public class Command
 {
-    public static String dir = "\"/home/lynda/projects/serveur-ftp\"";
+    public static String cwd = "\"/home/lynda/projects/serveur-ftp\"";
 
     public static void send(String str, PrintWriter output)
     {
@@ -38,7 +38,7 @@ public class Command
 
     public static String CommandPass(String[] command)
     {
-        if( checkPassword(command) )
+        if(checkPassword(command))
         {
             return "230 User logged in, proceed.";
         }
@@ -60,6 +60,8 @@ public class Command
     {
         // delete the file 
         return "254 Delete completed."; 
+
+        // return "450 File not available.";
     }
 
     public static String CommandMKD(String newDir)
@@ -74,11 +76,19 @@ public class Command
         return "250 FTP file transfer started correctly.";
     }
 
-    public static void CommandList()
+    public static String CommandRMDA(String rmDira)
+    {
+        //remove rmDira
+        return "250 FTP file transfer started correctly.";
+    }
+
+    public static String CommandList()
     {
         send("150 File status okay; about to open data connection.", output);
         send("226-Options: -a -l", output);
         send("226 6 matches total", output);
+
+        return "250 FTP file transfer started correctly.";
     }
 
     public static String CommandBye()
@@ -86,6 +96,23 @@ public class Command
         ServerMain.bye = true;
         return "231 User is \"logged out\". Service terminated.";
         //return "232 Logout command noted, will complete when transfer done.";
+    }
+
+    public static String CommandRetr(String filename)
+    {
+        return "125 Transfert starting.";
+        /*
+        return "150 File status reply.";
+
+        // Ending
+        return "226 Closing data canal.";
+        return "250 File service ending.";
+
+        // Errors
+        return "425 Error while opening data canal.";
+        return "426 Connection closed. Transfert interrupted.";
+        return "451 Service interrupted. Local error.";
+        */
     }
 
     public static String run(String commandString, PrintWriter output)
@@ -109,17 +136,12 @@ public class Command
 
         else if (command[0].equals("LIST"))
         {
-            CommandList();
+            return CommandList();
         }
         
         else if (command[0].equals("RETR")) //Retrieve a copy of the file
         {
-            
-        }
-        
-        else if (command[0].equals("PWD")) // Print working directory.
-        {
-            return "257 " + cwd + " comment ";
+            return CommandRetr(command[1]);
         }
         
         else if (command[0].equals("TYPE") && command[1].equals("I"))
@@ -129,12 +151,17 @@ public class Command
    
         else if (command[0].equals("APPE")) // Append the file
         {
-            CommandAppe(command[1]);
+            return CommandAppe(command[1]);
         }
 
         else if (command[0].equals("DELE")) // Delete the file.
         {
-            CommandDele(command[1]);
+            return CommandDele(command[1]);
+        }
+
+        else if (command[0].equals("PWD")) // Print working directory.
+        {
+            return "257 " + cwd + " comment ";
         }
 
         else if (command[0].equals("CWD")) // Change working directory.
@@ -145,19 +172,17 @@ public class Command
 
         else if ( command[0].equals("MKD") || command[0].equals("XMKD") ) // create a directory
         {
-            CommandMKD(command[1]);
+            return CommandMKD(command[1]);
         }
 
         else if ( command[0].equals("RMD") || command[0].equals("XRMD") ) // remove a directory
         {
-            CommandRMD(command[1]);
+            return CommandRMD(command[1]);
         }
 
         else if (command[0].equals("RMDA")) // remove a directory tree
         {
-            String rmDir = command[1];
-            //remove rmDir
-            return "250 FTP file transfer started correctly.";
+            return CommandRMDA(command[1]);
         }
 
 /*
@@ -170,10 +195,9 @@ public class Command
         {
             return "200 Command okay.";
         }
-        */
-
+*/
         return "502 Command not implemented.";
+        // return "500 Last command line completely unrecognized.";
+        // return "504 Last command invalid, action not possible at this time.";
     }
 }
-// return "500 Last command line completely unrecognized.";
-// return "504 Last command invalid, action not possible at this time.";
