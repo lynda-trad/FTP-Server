@@ -62,7 +62,7 @@ public class Command
         ServerMain.bye = true;
         return "231 User is \"logged out\". Service terminated." ;
     }
-    
+
     public static String run(String commandString, PrintWriter output)
     {
         String[] command = commandString.split(" ");
@@ -121,6 +121,5 @@ public class Command
         return "502 Command not implemented.";
     }
 }
-
 // return "500 Last command line completely unrecognized.";
 // return "504 Last command invalid, action not possible at this time.";
