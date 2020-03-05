@@ -64,6 +64,18 @@ public class Command
         // return "450 File not available.";
     }
 
+    public static String CommandCWD(String dir)
+    {
+        cwd = dir;
+        return "250 FTP file transfer started correctly.";
+    }
+
+    public static String CommandCDUP()
+    {
+        //CommandCWD on parent directory of current cwd
+        return "200 Last command received correctly.";
+    }
+
     public static String CommandMKD(String newDir)
     {
         //create newDir
@@ -89,6 +101,26 @@ public class Command
         send("226 6 matches total", output);
 
         return "250 FTP file transfer started correctly.";
+
+/*
+        return "125 Starting transfert.";
+        return "150 Opening data canal.";
+
+        return "226 Closing data canal.";
+        return "250 FTP file transfer started correctly.";
+
+        return "425 Error while opening data canal.";
+        return "426 Connection closed. Transfert interrupted.";
+        return "451 Service interrupted. Local error.";
+
+        return "450 File not available.";
+
+
+        return "501 Syntax error in parameters or arguments.";
+
+        return "421 Service not available.";
+        return "530 Session not opened.";
+*/
     }
 
     public static String CommandBye()
@@ -161,13 +193,17 @@ public class Command
 
         else if (command[0].equals("PWD")) // Print working directory.
         {
-            return "257 " + cwd + " comment ";
+            return "257 " + cwd + " Current working directory. ";
         }
 
         else if (command[0].equals("CWD")) // Change working directory.
         {
-            cwd = command[1];
-            return "250 FTP file transfer started correctly.";
+            return CommandCWD(command[1]);
+        }
+
+        else if (command[0].equals("CDUP")) // Change to parent directory.
+        {
+            return CommandCDUP();
         }
 
         else if ( command[0].equals("MKD") || command[0].equals("XMKD") ) // create a directory
@@ -193,7 +229,7 @@ public class Command
 
         else if (command[0].equals("EPRT")) //Specifies an extended address and port to which the server should connect.
         {
-            return "200 Command okay.";
+            return "200 Last command received correctly.";
         }
 */
         return "502 Command not implemented.";
