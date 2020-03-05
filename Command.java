@@ -66,7 +66,6 @@ public class Command
     
     public static void CommandAppe(String filename) // Append file
     {
-        // append the file 
         File newF = new File(filename);
         try 
         {
@@ -225,13 +224,6 @@ public class Command
         sendFilesList(cwd);
     }
 
-    public static void CommandBye()
-    {
-        ServerMain.bye = true;
-        ServerCore.send("231 User is \"logged out\". Service terminated.");
-        //ServerCore.send("232 Logout command noted, will complete when transfer done.");
-    }
-
     public static void CommandQuit()
     {
         ServerMain.bye = true;
@@ -277,11 +269,6 @@ public class Command
         else if(command[0].equals("AUTH"))
         {
             CommandAuth(command[1]);
-        }
-
-        else if (command[0].equals("BYE"))
-        {
-            CommandBye();
         }
 
         else if(command[0].equals("QUIT"))
