@@ -168,7 +168,7 @@ public class Command
         File dir = new File(rmDir);
         if(dir.exists())
         {
-            rmDir.delete();
+            dir.delete();
             ServerCore.send("250 FTP file transfer started correctly.");
         }
         else
@@ -180,7 +180,7 @@ public class Command
         File top = new File(rmDira);
         if(top.exists())
         {
-            File[] fileList = f.listFiles();
+            File[] fileList = top.listFiles();
             for(File files:fileList) 
             {
                 files.delete();
