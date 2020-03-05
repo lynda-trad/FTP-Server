@@ -4,12 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.List;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ServerCore extends Thread
 {
@@ -34,10 +28,10 @@ public class ServerCore extends Thread
         {
             File f = new File(pathname);
             File[] fileList = f.listFiles();
-            
-            for(File path:fileList) 
+
+            for(File files:fileList) 
             {
-                send(path.getName());
+                send(files.getName());
             }
         } 
         catch(Exception e) 
@@ -48,8 +42,7 @@ public class ServerCore extends Thread
 
     private void InitConnection()
     {
-        output.print("220 Welcome.\r\n");
-        output.flush();
+        send("220 Welcome.");
         System.out.print("Connection accepted");
     }
 
