@@ -6,6 +6,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerMain
 {
+    public static int ServerPort = 1212;
+
+    public static AtomicInteger numThreads = new AtomicInteger(0);
+
+    public static ArrayList<Thread> list   = new ArrayList<Thread>();
+
+    public static boolean bye = false;
+
+    public static void changePort()
+    {
+        StartServer(ServerMain.numThreads, ServerMain.list, ServerMain.serverPort);
+    }
+
     public static void StartServer(AtomicInteger numThreads, ArrayList<Thread> list, int serverPort)
     {
         try
@@ -13,7 +26,7 @@ public class ServerMain
             ServerSocket socket = new ServerSocket(serverPort);
             System.out.println("Server listening on port " + serverPort);
 
-            while (true)
+            while (!bye)
             {
                 Socket client = socket.accept();
                 Thread thrd = new Thread(new ServerCore(client));
@@ -22,6 +35,8 @@ public class ServerMain
                 numThreads.incrementAndGet();
                 System.out.println("Thread " + numThreads.get() + " started.");
             }
+
+            socket.close();
 		} 
 		catch (IOException ioe)
         {
@@ -31,10 +46,6 @@ public class ServerMain
 	
 	public static void main(String[] args)
     {
-        int ServerPort = 1212;
-        AtomicInteger numThreads = new AtomicInteger(0);
-        ArrayList<Thread> list   = new ArrayList<Thread>();
-
-        StartServer(numThreads, list, ServerPort);
+        StartServer(ServerMain.numThreads, ServerMain.list, ServerMain.ServerPort);
     }
 }

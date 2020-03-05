@@ -32,17 +32,19 @@ public class ServerCore extends Thread
             while (true) //temporary
             {
                 input = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                System.out.print("Reader and writer created. ");
+                //System.out.print("Reader and writer created. ");
 
                 String inString;
                 while ((inString = input.readLine()) == null) ;
-                System.out.println("Read command " + inString);
+                System.out.println("Read command : " + inString+ '\n');
 
                 String outString = Command.run(inString, output);
-                System.out.println("Server sending:" + outString);
+                System.out.println("Server sending:" + outString + '\n');
+
                 output.print(outString + "\r\n");
                 output.flush();
             }
+
 		} 
 		catch (IOException e)
         {
