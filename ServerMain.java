@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerMain
 {
-    public static int ServerPort = 1212;
+    public static int serverPort = 1212;
 
     private static AtomicInteger numThreads = new AtomicInteger(0);
 
@@ -46,6 +46,6 @@ public class ServerMain
 	
 	public static void main(String[] args)
     {
-        StartServer(ServerMain.numThreads, ServerMain.list, ServerMain.ServerPort);
+        StartServer(ServerMain.numThreads, ServerMain.list, ServerMain.serverPort);
     }
 }

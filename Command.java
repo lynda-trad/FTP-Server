@@ -1,5 +1,12 @@
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.EventListener;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Command
 {
@@ -25,7 +32,7 @@ public class Command
 
     public static String CommandPort(String[] command)
     {
-        ServerMain.ServerPort = Integer.parseInt(command[1]);
+        ServerMain.serverPort = Integer.parseInt(command[1]);
         ServerMain.changePort();
 
         return "200 Last command received correctly.";
@@ -81,6 +88,13 @@ public class Command
         // return "450 File not available.";
     }
 
+    public static String CommandRnto(String pathname)
+    {
+        //rename the file
+        return "250 FTP file transfer started correctly.";
+        //return "553 Service interrupted. Filename is incorrect.";
+    }
+
     public static String CommandCWD(String dir)
     {
         cwd = dir;
@@ -111,11 +125,29 @@ public class Command
         return "250 FTP file transfer started correctly.";
     }
 
-    public static String CommandList()
+    public static String CommandList(String pathname)
     {
+/*
         send("150 File status okay; about to open data connection.", output);
         send("226-Options: -a -l", output);
         send("226 6 matches total", output);
+*/
+        try (Stream<Path> walk = Files.walk(Paths.get(pathname)))
+        {
+            List<String> files = walk.filter(Files::isRegularFile)
+                .map(x -> x.toString()).collect(Collectors.toList());
+            
+            if(files.size() > 0) files.forEach(System.out::println);
+
+            List<String> dir = walk.filter(Files::isDirectory)
+				.map(x -> x.toString()).collect(Collectors.toList());
+            if(dir.size() > 0) dir.forEach(System.out::println);
+
+        }
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
 
         return "250 FTP file transfer started correctly.";
 
@@ -169,6 +201,11 @@ public class Command
         return "451 Service interrupted. Local error.";
         */
     }
+    
+    public static String CommandPASV()
+    {
+        return "227 Entering passive mode.";
+    }
 
     public static String run(String commandString, PrintWriter output)
     {
@@ -184,10 +221,12 @@ public class Command
             return CommandPass(command);
         }
         
+        /*
         else if(command[0].equals("AUTH"))
         {
             return CommandAuth(command[1]);
         }
+        */
 
         else if (command[0].equals("BYE"))
         {
@@ -201,7 +240,7 @@ public class Command
 
         else if (command[0].equals("LIST"))
         {
-            return CommandList();
+            return CommandList(command[1]);
         }
         
         else if (command[0].equals("RETR")) //Retrieve a copy of the file
@@ -222,6 +261,11 @@ public class Command
         else if (command[0].equals("DELE")) // Delete the file.
         {
             return CommandDele(command[1]);
+        }
+
+        else if(command[0].equals("RNTO"))
+        {
+            return CommandRnto(command[1]);
         }
 
         else if (command[0].equals("PWD")) // Print working directory.
@@ -254,6 +298,11 @@ public class Command
             return CommandRMDA(command[1]);
         }
 
+        else if(command[0].equals("PASV"))
+        {
+            return CommandPASV();
+        }
+
 /*
         else if (command[0].equals("PORT")) //Specifies an address and port to which the server should connect.
         {
@@ -265,8 +314,9 @@ public class Command
             return "200 Last command received correctly.";
         }
 */
-        return "502 Command not implemented.";
+
         // return "500 Last command line completely unrecognized.";
+        return "502 Command not implemented.";
         // return "504 Last command invalid, action not possible at this time.";
     }
 }
