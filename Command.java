@@ -4,7 +4,7 @@ import java.io.File;
 
 public class Command
 {
-    public static String cwd = "/home/lynda/test/";
+    public static String cwd = "/home/lynda/test";
 
     private static String tempFilename = "";
 
@@ -158,7 +158,7 @@ public class Command
 
     public static void CommandMKD(String newDir) // Create new directory
     {
-        File newD = new File(newDir);
+        File newD = new File(cwd + '/' + newDir);
         newD.mkdir();
         ServerCore.send("257 Creating new directory");
     }
@@ -193,21 +193,36 @@ public class Command
             ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
+    public static void sendFilesList(String pathname)
+    {
+        try 
+        {
+            File f = new File(pathname);
+            if(f.exists())
+            {
+                File[] fileList = f.listFiles();
+
+                for(File path:fileList) 
+                {
+                    ServerCore.send(cwd + '/' + path.getName());
+                    System.out.println(cwd + '/' + path.getName());
+                }
+
+                ServerCore.send("226 Transfer complete.");
+            }
+            else
+                ServerCore.send("450 File not available.");
+        } 
+        catch(Exception e) 
+        {
+            e.printStackTrace();
+        }
+    }
+
     public static void CommandList()
     {
         ServerCore.send("150 Opening data canal.");
-
-        ServerCore.sendFilesList(cwd);
-
-        ServerCore.send("226 Transfer complete.");
-
-/*
-        return "425 Error while opening data canal.";
-        return "426 Connection closed. Transfert interrupted.";
-        return "451 Service interrupted. Local error.";
-
-        return "450 File not available.";
-*/
+        sendFilesList(cwd);
     }
 
     public static void CommandBye()

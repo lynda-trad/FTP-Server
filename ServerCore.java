@@ -22,24 +22,6 @@ public class ServerCore extends Thread
         output.flush();
     }
 
-    public static void sendFilesList(String pathname)
-    {
-        try 
-        {
-            File f = new File(pathname);
-            File[] fileList = f.listFiles();
-
-            for(File files:fileList) 
-            {
-                send(files.getName());
-            }
-        } 
-        catch(Exception e) 
-        {
-            e.printStackTrace();
-        }
-    }
-
     private void InitConnection()
     {
         send("220 Welcome.");
