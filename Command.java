@@ -1,10 +1,12 @@
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.EventListener;
+import java.io.File;
 
 public class Command
 {
-    public static String cwd = "\"/home/lynda/projects/serveur-ftp/\"";
+    public static String cwd = "/home/lynda/projects/serveur-ftp/";
+
+    private static String tempFilename = "";
 
     public static void CommandUser(String[] command)
     {
@@ -60,22 +62,68 @@ public class Command
     public static void CommandAppe(String filename)
     {
         // append the file 
+        File newF = new File(filename);
+        try 
+        {
+			newF.createNewFile();
+        } 
+        catch (IOException e) 
+        {
+			e.printStackTrace();
+            ServerCore.send("553 Service interrupted. Filename is incorrect.");
+		}
         ServerCore.send("250 FTP file transfer started correctly.");
     }
 
-    public static void CommandDele(String filename)
+    public static void CommandDele(String filename) // delete the file 
     {
-        // delete the file 
-        ServerCore.send("254 Delete completed."); 
+        File del = new File(filename);
+        if(del.exists())
+        {    
+            del.delete();
+            ServerCore.send("254 Delete completed."); 
+        }
+        else
+            ServerCore.send("450 File not available.");
+    }
 
-        // ServerCore.send("450 File not available.");
+    public static void CommandRnfr(String pathname)
+    {
+        tempFilename = pathname;
     }
 
     public static void CommandRnto(String pathname)
     {
         //rename the file
-        ServerCore.send("250 FTP file transfer started correctly.");
-        //return "553 Service interrupted. Filename is incorrect.";
+        File original = new File(tempFilename);
+
+        if(original.exists())
+        {
+            File newF = new File(pathname);
+            original.renameTo(newF);
+            ServerCore.send("250 FTP file transfer started correctly.");
+        }
+        else
+            ServerCore.send("553 Service interrupted. Filename is incorrect.");
+    }
+
+    public static void CommandSize(String pathname)
+    {
+        // get the size of the file        
+        File file = new File(pathname);
+        
+        if(file.exists())
+        {    
+            
+            ServerCore.send("250 FTP file transfer started correctly.");
+        }
+        else
+            ServerCore.send("553 Service interrupted. Filename is incorrect.");
+    }
+
+    public static void CommandPWD()
+    {
+        ServerCore.send("257 " + cwd + " Current working directory.");
     }
 
     public static void CommandCWD(String dir)
@@ -93,6 +141,8 @@ public class Command
     public static void CommandMKD(String newDir)
     {
         //create newDir
+        File newD = new File(newDir);
+        newD.mkdir();
         ServerCore.send("257 Creating new directory");
     }
 
@@ -214,14 +264,24 @@ public class Command
             CommandDele(command[1]);
         }
 
-        else if(command[0].equals("RNTO"))
+        else if(command[0].equals("RNFR")) // Rename the file (from)
+        {
+            CommandRnfr(command[1]);
+        }
+
+        else if(command[0].equals("RNTO")) // Rename the file (to)
         {
             CommandRnto(command[1]);
         }
 
+        else if(command[0].equals("SIZE"))
+        {
+            CommandSize(command[1]);
+        }
+
         else if (command[0].equals("PWD")) // Print working directory.
         {
-            ServerCore.send("257 " + cwd + " Current working directory.");
+            CommandPWD();
         }
 
         else if (command[0].equals("CWD")) // Change working directory.
