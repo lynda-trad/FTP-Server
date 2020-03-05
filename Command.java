@@ -1,16 +1,10 @@
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.EventListener;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Command
 {
-    public static String cwd = "\"/home/lynda/projects/serveur-ftp\"";
+    public static String cwd = "\"/home/lynda/projects/serveur-ftp/\"";
 
     public static void CommandUser(String[] command)
     {
@@ -26,9 +20,11 @@ public class Command
 
     public static void CommandPort(String[] command)
     {
+        /*
         ServerMain.serverPort = Integer.parseInt(command[1]);
         ServerMain.changePort();
-
+        */
+        
         ServerCore.send("200 Last command received correctly.");
     }
 
@@ -54,9 +50,9 @@ public class Command
 
     public static void CommandAuth(String mecanism)
     {
-        ServerCore.send("234 Security data exchange complete.");
-        /*
         ServerCore.send("504 Request denied for policy reasons.");
+        /*
+        ServerCore.send("234 Security data exchange complete.");
         ServerCore.send("534 Request denied for policy reasons.");
         */
     }
@@ -112,11 +108,11 @@ public class Command
         ServerCore.send("250 FTP file transfer started correctly.");
     }
 
-    public static void CommandList(String pathname)
+    public static void CommandList()
     {
         ServerCore.send("150 Opening data canal.");
 
-        ServerCore.sendFilesList();
+        ServerCore.sendFilesList(cwd);
 
         ServerCore.send("226 Transfer complete.");
 
@@ -178,12 +174,10 @@ public class Command
             CommandPass(command);
         }
         
-        /*
         else if(command[0].equals("AUTH"))
         {
             CommandAuth(command[1]);
         }
-        */
 
         else if (command[0].equals("BYE"))
         {
@@ -197,7 +191,7 @@ public class Command
 
         else if (command[0].equals("LIST"))
         {
-            CommandList(command[1]);
+            CommandList();
         }
         
         else if (command[0].equals("RETR")) //Retrieve a copy of the file
@@ -259,12 +253,12 @@ public class Command
         {
             CommandPASV();
         }
-/*
         else if (command[0].equals("PORT")) //Specifies an address and port to which the server should connect.
         {
             CommandPort(command);
         }
 
+/*
         else if (command[0].equals("EPRT")) //Specifies an extended address and port to which the server should connect.
         {
             ServerCore.send("200 Last command received correctly.");
