@@ -4,13 +4,22 @@ public class Command
 {
     public static String dir = "\"/home/lynda/projects/serveur-ftp\"";
 
+    public static void send(String str, PrintWriter output)
+    {
+        output.print(str + "\r\n");
+        output.flush();
+    }
+
     public static String CommandUser(String[] command)
     {
         if (command[1].equals("anonymous"))
         {
-            return ("230 User logged in, proceed.");
+            return "230 User logged in, proceed.";
         }
-        return "500 Last command line completely unrecognized.";
+        else
+        {
+            return "330 Enter password (may be sent with hide-your-input)";
+        }
     }
 
     public static String CommandPort(String[] command)
@@ -21,18 +30,39 @@ public class Command
         return "200 Last command received correctly.";
     }
 
+    public static boolean checkPassword(String[] command)
+    {
+        //check if password command[1] is right for the user command[0]
+        return false;
+    }
+
+    public static String CommandPass(String[] command)
+    {
+        if( checkPassword(command) )
+        {
+            return "230 User logged in, proceed.";
+        }
+        else
+        {
+            // return "430 Log-on time or tries exceeded, goodbye.";
+            return "431 Log-on unsuccessful. User and/or password invalid.";
+            //return "432 User not valid for this service.";
+        }
+    }
+
+    public static void CommandList()
+    {
+        send("150 File status okay; about to open data connection.", output);
+        send("226-Options: -a -l", output);
+        send("226 6 matches total", output);
+    }
+
     public static String CommandBye()
     {
         ServerMain.bye = true;
         return "231 User is \"logged out\". Service terminated." ;
     }
-
-    public static void send(String str, PrintWriter output)
-    {
-        output.print(str + "\r\n");
-        output.flush();
-    }
-
+    
     public static String run(String commandString, PrintWriter output)
     {
         String[] command = commandString.split(" ");
@@ -44,19 +74,17 @@ public class Command
 
         else if (command[0].equals("PASS"))
         {
-
+            return CommandPass(command);
         }
         
         else if (command[0].equals("BYE"))
         {
-            CommandBye();
+            return CommandBye();
         }
 
         else if (command[0].equals("LIST"))
         {
-            send("150 File status okay; about to open data connection.", output);
-            send("226-Options: -a -l", output);
-            send("226 6 matches total", output);
+            CommandList();
         }
         
         else if (command[0].equals("RETR"))
@@ -93,3 +121,6 @@ public class Command
         return "502 Command not implemented.";
     }
 }
+
+// return "500 Last command line completely unrecognized.";
+// return "504 Last command invalid, action not possible at this time.";
