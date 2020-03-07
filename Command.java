@@ -87,6 +87,101 @@ public class Command
         ServerCore.send("200 Last command received correctly.");
     }
 
+    public static void PASV() // Entering passive mode
+    {
+        ServerCore.send("227 Entering passive mode.");
+    }
+
+    public static void QUIT() // Quit
+    {
+        ServerMain.quit = true;
+        ServerCore.send("221 Control canal closed by the service.");
+    }
+
+    public static void sendLIST(String pathname) // Called by LIST()
+    {
+        try
+        {
+            File f = new File(pathname);
+            if(f.exists())
+            {
+                File[] fileList = f.listFiles();
+
+                for(File path:fileList)
+                {
+                    ServerCore.send(pathname + '/' + path.getName());
+                    System.out.println(pathname + '/' + path.getName());
+                }
+
+                ServerCore.send("226 Transfer complete.");
+            }
+            else
+                ServerCore.send("450 File not available.");
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void LIST(String pathname) // Returns information of a file or directory if specified, else information of the current working directory is returned.
+    {
+        ServerCore.send("150 Opening data canal.");
+        sendLIST(pathname);
+    }
+
+    public static void sendNLST(String pathname) // Called by NLST()
+    {
+        try
+        {
+            File f = new File(pathname);
+            if(f.exists())
+            {
+                File[] fileList = f.listFiles();
+
+                for(File path:fileList)
+                {
+                    if (path.isFile())
+                    {
+                        ServerCore.send(pathname + '/' + path.getName());
+                        System.out.println(pathname + '/' + path.getName());
+                    }
+                }
+
+                ServerCore.send("226 Transfer complete.");
+            }
+            else
+                ServerCore.send("450 Path does not exist.");
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void NLST(String pathname) // Get a list of file names in a specified directory.
+    {
+        ServerCore.send("150 Opening data canal.");
+        sendNLST(pathname);
+    }
+
+    public static void RETR(String filename) // Retrieve a file
+    {
+        ServerCore.send("125 Transfert starting.");
+        /*
+        return "150 File status reply.";
+
+        // Ending
+        return "226 Closing data canal.";
+        return "250 File service ending.";
+
+        // Errors
+        return "425 Error while opening data canal.";
+        return "426 Connection closed. Transfert interrupted.";
+        return "451 Service interrupted. Local error.";
+        */
+    }
+
     public static void APPE(String filename) // Append file
     {
         File newF = new File(filename);
@@ -106,9 +201,14 @@ public class Command
     {
         File del = new File(filename);
         if(del.exists())
-        {    
-            del.delete();
-            ServerCore.send("254 Delete completed."); 
+        {
+            if(del.isFile())
+            {
+                del.delete();
+                ServerCore.send("254 Delete completed.");
+            }
+            else
+                ServerCore.send("450 File not available.");
         }
         else
             ServerCore.send("450 File not available.");
@@ -171,33 +271,6 @@ public class Command
             ServerCore.send("500 Invalid parameters.");
     }
 
-    public static void MFMT(String[] command) // Modify a file or folder's last modified date and time
-    {
-        String date = command[1];
-        String pathname = command[2];
-
-        File file = new File(pathname);
-
-        if(file.exists() && date.length() == 14)
-        {
-            int year   = Integer.valueOf(date.substring(0,3));
-            int month  = Integer.valueOf(date.substring(4,6));
-            int hour   = Integer.valueOf(date.substring(7,9));
-            int min    = Integer.valueOf(date.substring(10,11));
-            int sec    = Integer.valueOf(date.substring(12,13));
-
-            Date newDate = new Date(year, month, hour, min, sec);
-
-            long time = newDate.getTime();
-
-            file.setLastModified(time);
-
-            ServerCore.send("213 Last modified date and time updated");
-        }
-        else
-            ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
-    }
-
     public static void MFCT(String[] command) // Modify a file or folder's creation date and time
     {
         String date = command[1];
@@ -226,6 +299,33 @@ public class Command
             }
 
             ServerCore.send("213 Creation date and time updated");
+        }
+        else
+            ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
+    }
+
+    public static void MFMT(String[] command) // Modify a file or folder's last modified date and time
+    {
+        String date = command[1];
+        String pathname = command[2];
+
+        File file = new File(pathname);
+
+        if(file.exists() && date.length() == 14)
+        {
+            int year   = Integer.valueOf(date.substring(0,3));
+            int month  = Integer.valueOf(date.substring(4,6));
+            int hour   = Integer.valueOf(date.substring(7,9));
+            int min    = Integer.valueOf(date.substring(10,11));
+            int sec    = Integer.valueOf(date.substring(12,13));
+
+            Date newDate = new Date(year, month, hour, min, sec);
+
+            long time = newDate.getTime();
+
+            file.setLastModified(time);
+
+            ServerCore.send("213 Last modified date and time updated");
         }
         else
             ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
@@ -297,99 +397,39 @@ public class Command
             ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
-    public static void sendLIST(String pathname) // Called by LIST()
+    public static long folderSize(File file) // Called by DSIZ
     {
-        try 
+        long size = 0;
+        File[] fileList = file.listFiles();
+
+        for(File path:fileList)
         {
-            File f = new File(pathname);
-            if(f.exists())
-            {
-                File[] fileList = f.listFiles();
-
-                for(File path:fileList) 
-                {
-                    ServerCore.send(pathname + '/' + path.getName());
-                    System.out.println(pathname + '/' + path.getName());
-                }
-
-                ServerCore.send("226 Transfer complete.");
-            }
+            if(path.isDirectory())
+                size += folderSize(path);
             else
-                ServerCore.send("450 File not available.");
-        } 
-        catch(Exception e) 
-        {
-            e.printStackTrace();
+                size += path.length();
         }
+        return size;
     }
 
-    public static void LIST(String pathname) // Returns information of a file or directory if specified, else information of the current working directory is returned.
+    public static void DSIZ(String pathname) // Get the directory size
     {
-        ServerCore.send("150 Opening data canal.");
-        sendLIST(pathname);
-    }
-
-    public static void sendNLST(String pathname) // Called by NLST()
-    {
+        long size = 0;
         try
         {
             File f = new File(pathname);
             if(f.exists())
             {
-                File[] fileList = f.listFiles();
-
-                for(File path:fileList)
-                {
-                    if (path.isFile())
-                    {
-                        ServerCore.send(pathname + '/' + path.getName());
-                        System.out.println(pathname + '/' + path.getName());
-                    }
-                }
-
-                ServerCore.send("226 Transfer complete.");
+                size = folderSize(f);
+                ServerCore.send("226 " + pathname + " : " + String.valueOf(size) + " bytes.");
             }
             else
-                ServerCore.send("450 Path does not exist.");
+                ServerCore.send("450 File not available.");
         }
         catch(Exception e)
         {
             e.printStackTrace();
         }
-    }
-
-    public static void NLST(String pathname) // Get a list of file names in a specified directory.
-    {
-        ServerCore.send("150 Opening data canal.");
-        sendNLST(pathname);
-    }
-
-    public static void QUIT() // Quit
-    {
-        ServerMain.quit = true;
-        ServerCore.send("221 Control canal closed by the service.");
-    }
-
-    public static void RETR(String filename) // Retrieve a file
-    {
-        ServerCore.send("125 Transfert starting.");
-        /*
-        return "150 File status reply.";
-
-        // Ending
-        return "226 Closing data canal.";
-        return "250 File service ending.";
-
-        // Errors
-        return "425 Error while opening data canal.";
-        return "426 Connection closed. Transfert interrupted.";
-        return "451 Service interrupted. Local error.";
-        */
-    }
-
-    public static void PASV() // Entering passive mode
-    {
-        ServerCore.send("227 Entering passive mode.");
     }
 
     public static void AVBL(String pathname) // Get available space in directory
@@ -413,6 +453,11 @@ public class Command
             USER(command);
         }
 
+        else if(command[0].equals("ACCT")) // Account information
+        {
+            ACCT();
+        }
+
         else if (command[0].equals("PASS")) // Authentication password
         {
             PASS(command);
@@ -424,6 +469,26 @@ public class Command
                 AUTH(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
+        }
+
+        else if(command[0].equals("ADAT")) // Security Data
+        {
+            ADAT();
+        }
+
+        else if(command[0].equals("PASV")) // Passive mode
+        {
+            PASV();
+        }
+
+        else if (command[0].equals("PORT")) // Port
+        {
+            PORT(command);
+        }
+
+        else if (command[0].equals("TYPE") && command[1].equals("I"))
+        {
+            ServerCore.send("200 TYPE is now 8-bit binary.");
         }
 
         else if(command[0].equals("QUIT")) // Quit
@@ -454,12 +519,7 @@ public class Command
             else
                 ServerCore.send("500 Invalid parameters");
         }
-        
-        else if (command[0].equals("TYPE") && command[1].equals("I"))
-        {
-            ServerCore.send("200 TYPE is now 8-bit binary.");
-        }
-   
+
         else if (command[0].equals("APPE")) // Append the file
         {
             if(command.length > 1)
@@ -568,24 +628,12 @@ public class Command
                 ServerCore.send("500 Invalid parameters");
         }
 
-        else if(command[0].equals("PASV")) // Passive mode
+        else if(command[0].equals("DSIZ")) // Get the directory size
         {
-            PASV();
-        }
-
-        else if (command[0].equals("PORT")) // Port
-        {
-            PORT(command);
-        }
-
-        else if(command[0].equals("ADAT")) // Security Data
-        {
-            ADAT();
-        }
-
-        else if(command[0].equals("ACCT")) // Account information
-        {
-            ACCT();
+            if(command.length > 1)
+                DSIZ(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if(command[0].equals("AVBL")) // Available space in directory
