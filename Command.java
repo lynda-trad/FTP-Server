@@ -151,6 +151,26 @@ public class Command
             ServerCore.send("553 Service interrupted. Filename is incorrect.");
     }
 
+    public static void MDTM(String pathname)
+    {
+        File file = new File(pathname);
+
+        if(file.exists())
+        {
+            Path p = Paths.get(pathname);
+            try
+            {
+                ServerCore.send("213 " + Files.getLastModifiedTime(p));
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else
+            ServerCore.send("500 Invalid parameters.");
+    }
+
     public static void MFMT(String[] command) // Modify a file or folder's last modified date and time
     {
         String date = command[1];
@@ -210,6 +230,7 @@ public class Command
         else
             ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
     }
+
     public static void PWD() // Print working directory
     {
         ServerCore.send("257 " + cwd + " Current working directory.");
@@ -477,6 +498,16 @@ public class Command
                 SIZE(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
+        }
+
+        else if(command[0].equals("MDTM"))
+        {
+            if(command.length > 1)
+            {
+                MDTM(command[1]);
+            }
+            else
+                ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
         }
 
         else if(command[0].equals("MFCT")) // Modify a file or folder's creation date and time
