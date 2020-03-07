@@ -165,6 +165,34 @@ public class Command
         sendNLST(pathname);
     }
 
+    public static void MLSD(String pathname) // Lists the contents of a directory if a directory is named.
+    {
+        /*
+        Standard Facts
+
+   This document defines a standard set of facts as follows:
+
+      size       -- Size in octets
+      modify     -- Last modification time
+      create     -- Creation time
+      type       -- Entry type
+      unique     -- Unique id of file/directory
+      perm       -- File permissions, whether read, write, execute is
+                    allowed for the login id.
+      lang       -- Language of the file name per IANA [11] registry.
+      media-type -- MIME media-type of file contents per IANA registry.
+      charset    -- Character set per IANA registry (if not UTF-8)
+
+      */
+
+        ServerCore.send("150 initial");
+
+        //
+
+        ServerCore.send("226 final");
+
+    }
+
     public static void RETR(String filename) // Retrieve a file
     {
         ServerCore.send("125 Transfert starting.");
@@ -444,216 +472,207 @@ public class Command
             ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
-    public static void run(String commandString, PrintWriter output)
+    public static void run(String commandString)
     {
         String[] command = commandString.split(" ");
+        String commandS = command[0];
 
-        if (command[0].equals("USER")) // Authentication username
+        switch(commandS)
         {
-            USER(command);
-        }
+            case "USER": // Authentication username
+                if(command.length > 1)
+                    USER(command);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if(command[0].equals("ACCT")) // Account information
-        {
-            ACCT();
-        }
+            case "ACCT": // Account information
+                ACCT();
+            break;
 
-        else if (command[0].equals("PASS")) // Authentication password
-        {
-            PASS(command);
-        }
-        
-        else if(command[0].equals("AUTH")) // Authentication / Security Mechanism
-        {
-            if(command.length > 1)
-                AUTH(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "PASS": // Authentication password
+                PASS(command);
+            break;
 
-        else if(command[0].equals("ADAT")) // Security Data
-        {
-            ADAT();
-        }
+            case "AUTH": // Authentication / Security Mechanism
+                if(command.length > 1)
+                    AUTH(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if(command[0].equals("PASV")) // Passive mode
-        {
-            PASV();
-        }
+            case "ADAT": // Security Data
+                ADAT();
+            break;
 
-        else if (command[0].equals("PORT")) // Port
-        {
-            PORT(command);
-        }
+            case "PASV": // Passive mode
+                PASV();
+            break;
 
-        else if (command[0].equals("TYPE") && command[1].equals("I"))
-        {
-            ServerCore.send("200 TYPE is now 8-bit binary.");
-        }
+            case "PORT": // Port
+                PORT(command);
+            break;
 
-        else if(command[0].equals("QUIT")) // Quit
-        {
-            QUIT();
-        }
+            case "TYPE": // Type
+                if(command[1].equals("I"))
+                    ServerCore.send("200 TYPE is now 8-bit binary.");
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if (command[0].equals("LIST")) // Returns information of a file or directory if specified, else information of the current working directory is returned.
-        {
-            if(command.length > 1)
-                LIST(command[1]);
-            else
-                LIST(cwd);
-        }
+            case "QUIT": // Quit
+                QUIT();
+            break;
 
-        else if(command[0].equals("NLST")) // Get a list of file names in a specified directory.
-        {
-            if(command.length > 1)
-                NLST(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "LIST": // Returns information of a file or directory if specified, else information of the current working directory is returned.
+                if(command.length > 1)
+                    LIST(command[1]);
+                else
+                    LIST(cwd);
+            break;
 
-        else if (command[0].equals("RETR")) //Retrieve a copy of the file
-        {
-            if(command.length > 1)
-                RETR(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "NLST": // Get a list of file names in a specified directory.
+                if(command.length > 1)
+                    NLST(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if (command[0].equals("APPE")) // Append the file
-        {
-            if(command.length > 1)
-                APPE(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "MLSD": // Lists the contents of a directory if a directory is named.
+                if(command.length > 1)
+                    MLSD(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if (command[0].equals("DELE")) // Delete the file.
-        {
-            if(command.length > 1)
-                DELE(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "RETR": //Retrieve a copy of the file
+                if(command.length > 1)
+                    RETR(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if(command[0].equals("RNFR")) // Rename the file (from)
-        {
-            if(command.length > 1)
-                RNFR(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "APPE": // Append the file
+                if(command.length > 1)
+                    APPE(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if(command[0].equals("RNTO")) // Rename the file (to)
-        {
-            if(command.length > 1)
-                RNTO(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "DELE": // Delete the file.
+                if(command.length > 1)
+                    DELE(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if(command[0].equals("SIZE")) // Gets the file size
-        {
-            if(command.length > 1)
-                SIZE(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "RNFR": // Rename the file (from)
+                if(command.length > 1)
+                    RNFR(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if(command[0].equals("MDTM")) // Get a file's last modified date and time
-        {
-            if(command.length > 1)
-            {
-                MDTM(command[1]);
-            }
-            else
-                ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
-        }
+            case "RNTO": // Rename the file (to)
+                if(command.length > 1)
+                    RNTO(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if(command[0].equals("MFCT")) // Modify a file or folder's creation date and time
-        {
-            if(command.length > 2)
-                MFCT(command);
-            else
-                ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
-        }
+            case "SIZE": // Gets the file size
+                if(command.length > 1)
+                    SIZE(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if(command[0].equals("MFMT")) // Modify a file or folder's last modified date and time
-        {
-            if(command.length > 2)
-                MFMT(command);
-            else
-                ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
-        }
+            case "MDTM": // Get a file's last modified date and time
+                if(command.length > 1)
+                    MDTM(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
+            break;
 
-        else if (command[0].equals("PWD") || command[0].equals("XPWD")) // Print working directory.
-        {
-            PWD();
-        }
+            case "MFCT": // Modify a file or folder's creation date and time
+                if(command.length > 2)
+                    MFCT(command);
+                else
+                    ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
+            break;
 
-        else if (command[0].equals("CWD")) // Change working directory.
-        {
-            if(command.length > 1)
-                CWD(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "MFMT": // Modify a file or folder's last modified date and time
+                if(command.length > 2)
+                    MFMT(command);
+                else
+                    ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
+            break;
 
-        else if (command[0].equals("CDUP") || command[0].equals("XCUP")) // Change to parent directory.
-        {
-            CDUP();
-        }
+            case "PWD": // Print working directory.
+            case "XPWD":
+                PWD();
+            break;
 
-        else if ( command[0].equals("MKD") || command[0].equals("XMKD") ) // Create a directory
-        {
-            if(command.length > 1)
-                MKD(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "CWD": // Change working directory.
+                if(command.length > 1)
+                    CWD(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if ( command[0].equals("RMD") || command[0].equals("XRMD") ) // Remove a directory
-        {
-            if(command.length > 1)
-                RMD(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "CDUP": // Change to parent directory.
+            case "XCUP":
+                CDUP();
+            break;
 
-        else if (command[0].equals("RMDA")) // Remove a directory tree
-        {
-            if(command.length > 1)
-                RMDA(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "MKD": // Create a directory
+            case "XMKD":
+                if(command.length > 1)
+                    MKD(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if(command[0].equals("DSIZ")) // Get the directory size
-        {
-            if(command.length > 1)
-                DSIZ(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "RMD": // Remove a directory
+            case "XRMD":
+                if(command.length > 1)
+                    RMD(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
-        else if(command[0].equals("AVBL")) // Available space in directory
-        {
-            if(command.length > 1)
-                AVBL(command[1]);
-            else
-                ServerCore.send("500 Invalid parameters");
-        }
+            case "RMDA": // Remove a directory tree
+                if(command.length > 1)
+                    RMDA(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
+
+            case "DSIZ": // Get the directory size
+                if(command.length > 1)
+                    DSIZ(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
+
+            case "AVBL": // Available space in directory
+                if(command.length > 1)
+                    AVBL(command[1]);
+                else
+                    ServerCore.send("500 Invalid parameters");
+            break;
 
 /*
-        else if (command[0].equals("EPRT")) //Specifies an extended address and port to which the server should connect.
-        {
-            ServerCore.send("200 Last command received correctly.");
-        }
+            case "EPRT": //Specifies an extended address and port to which the server should connect.
+                ServerCore.send("200 Last command received correctly.");
+            break;
 */
 
-        else
-            ServerCore.send("502 Command not implemented.");
-//          ServerCore.send("500 Last command line completely unrecognized.");
-//          ServerCore.send("504 Last command invalid, action not possible at this time.");
+            default:
+                ServerCore.send("502 Command not implemented.");
+//              ServerCore.send("500 Last command line completely unrecognized.");
+//              ServerCore.send("504 Last command invalid, action not possible at this time.");
+            break;
+        }
     }
 }

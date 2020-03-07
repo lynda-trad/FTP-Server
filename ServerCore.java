@@ -44,7 +44,7 @@ public class ServerCore extends Thread
                 while ((inString = input.readLine()) == null) ;
                 System.out.println("Read command : " + inString+ '\n');
 
-                Command.run(inString, output);
+                Command.run(inString);
                 /*
                 String outString = Command.run(inString, output);
                 System.out.println("Server sending:" + outString + '\n');
