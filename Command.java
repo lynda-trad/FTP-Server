@@ -144,6 +144,21 @@ public class Command
             ServerCore.send("553 Service interrupted. Filename is incorrect.");
     }
 
+    public static void MFCT(String[] command) // Modify a file or folder's creation date and time
+    {
+        String date = command[1];
+        String pathname = command[2];
+
+        File file = new File(pathname);
+
+        if(file.exists() && date.length() == 14)
+        {
+
+        }
+        else
+            ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
+    }
+
     public static void PWD() // Print working directory
     {
         ServerCore.send("257 " + cwd + " Current working directory.");
@@ -411,6 +426,14 @@ public class Command
                 SIZE(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
+        }
+
+        else if(command[0].equals("MFCT")) // Modify a file or folder's creation date and time
+        {
+            if(command.length > 2)
+                MFCT(command);
+            else
+                ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
         }
 
         else if (command[0].equals("PWD") || command[0].equals("XPWD")) // Print working directory.
