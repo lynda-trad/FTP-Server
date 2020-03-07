@@ -4,6 +4,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.File;
 
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.util.Date;
+
 public class Command
 {
     public static String cwd = System.getProperty("user.dir");
@@ -153,7 +160,25 @@ public class Command
 
         if(file.exists() && date.length() == 14)
         {
+            int year   = Integer.valueOf(date.substring(0,3));
+            int month  = Integer.valueOf(date.substring(4,6));
+            int hour   = Integer.valueOf(date.substring(7,9));
+            int min    = Integer.valueOf(date.substring(10,11));
+            int sec    = Integer.valueOf(date.substring(12,13));
 
+            Date newDate = new Date(year, month, hour, min, sec);
+
+            FileTime fileTime = FileTime.fromMillis(newDate.getTime());
+
+            Path path = Paths.get(pathname);
+            try
+            {
+                Files.setAttribute(path, "creationTime", fileTime);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
         else
             ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
