@@ -168,17 +168,11 @@ public class Command
 
             Date newDate = new Date(year, month, hour, min, sec);
 
-            FileTime fileTime = FileTime.fromMillis(newDate.getTime());
+            long time = newDate.getTime();
 
-            Path path = Paths.get(pathname);
-            try
-            {
-                Files.setAttribute(path, "creationTime", fileTime);
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
+            file.setLastModified(time);
+
+            ServerCore.send("213 Last modified date and time updated");
         }
         else
             ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
