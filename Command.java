@@ -26,14 +26,9 @@ public class Command
         }
     }
 
-    public static void PORT(String[] command) // Change of port
+    public static void ACCT()
     {
-        /*
-        ServerMain.serverPort = Integer.parseInt(command[1]);
-        ServerMain.changePort();
-        */
-        
-        ServerCore.send("200 Last command received correctly.");
+        ServerCore.send("230 User logged in, proceed.");
     }
 
     public static boolean checkPassword(String[] command) // Called by PASS()
@@ -57,7 +52,7 @@ public class Command
         }
     }
 
-    public static void AUTH(String mecanism) // Authentication/Security Mechanism
+    public static void AUTH(String mecanism) // Authentication / Security Mechanism
     {
         ServerCore.send("504 Request denied for policy reasons.");
         /*
@@ -65,7 +60,26 @@ public class Command
         ServerCore.send("534 Request denied for policy reasons.");
         */
     }
-    
+
+    public static void ADAT() // Authentication / Security Data
+    {
+        ServerCore.send("503 Request denied for policy reasons.");
+        /*
+        ServerCore.send("235 Security data exchange complete.");
+        ServerCore.send("535 Request denied for policy reasons.");
+        */
+    }
+
+    public static void PORT(String[] command) // Change of port
+    {
+        /*
+        ServerMain.serverPort = Integer.parseInt(command[1]);
+        ServerMain.changePort();
+        */
+
+        ServerCore.send("200 Last command received correctly.");
+    }
+
     public static void APPE(String filename) // Append file
     {
         File newF = new File(filename);
@@ -196,7 +210,7 @@ public class Command
             ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
-    public static void sendFilesList(String pathname) // Called by LIST()
+    public static void sendLIST(String pathname) // Called by LIST()
     {
         try 
         {
@@ -207,8 +221,8 @@ public class Command
 
                 for(File path:fileList) 
                 {
-                    ServerCore.send(cwd + '/' + path.getName());
-                    System.out.println(cwd + '/' + path.getName());
+                    ServerCore.send(pathname + '/' + path.getName());
+                    System.out.println(pathname + '/' + path.getName());
                 }
 
                 ServerCore.send("226 Transfer complete.");
@@ -222,10 +236,45 @@ public class Command
         }
     }
 
-    public static void LIST() // Get a list of files and directories
+    public static void LIST(String pathname) // Returns information of a file or directory if specified, else information of the current working directory is returned.
     {
         ServerCore.send("150 Opening data canal.");
-        sendFilesList(cwd);
+        sendLIST(pathname);
+    }
+
+    public static void sendNLST(String pathname) // Called by NLST()
+    {
+        try
+        {
+            File f = new File(pathname);
+            if(f.exists())
+            {
+                File[] fileList = f.listFiles();
+
+                for(File path:fileList)
+                {
+                    if (path.isFile())
+                    {
+                        ServerCore.send(pathname + '/' + path.getName());
+                        System.out.println(pathname + '/' + path.getName());
+                    }
+                }
+
+                ServerCore.send("226 Transfer complete.");
+            }
+            else
+                ServerCore.send("450 Path does not exist.");
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void NLST(String pathname) // Get a list of file names in a specified directory.
+    {
+        ServerCore.send("150 Opening data canal.");
+        sendLIST(pathname);
     }
 
     public static void QUIT() // Quit
@@ -250,10 +299,22 @@ public class Command
         return "451 Service interrupted. Local error.";
         */
     }
-    
+
     public static void PASV() // Entering passive mode
     {
         ServerCore.send("227 Entering passive mode.");
+    }
+
+    public static void AVBL(String pathname) // Get available space in directory
+    {
+        File f = new File(pathname);
+        if(f.exists())
+        {
+            ServerCore.send( "Usable space : " + String.valueOf(f.getUsableSpace()) + " bytes.");
+            ServerCore.send("213 File status.");
+        }
+        else
+            ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
     public static void run(String commandString, PrintWriter output)
@@ -285,9 +346,20 @@ public class Command
 
         else if (command[0].equals("LIST"))
         {
-            LIST();
+            if(command.length > 1)
+                LIST(command[1]);
+            else
+                LIST(cwd);
         }
-        
+
+        else if(command[0].equals("NLST"))
+        {
+            if(command.length > 1)
+                NLST(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
+        }
+
         else if (command[0].equals("RETR")) //Retrieve a copy of the file
         {
             if(command.length > 1)
@@ -341,7 +413,7 @@ public class Command
                 ServerCore.send("500 Invalid parameters");
         }
 
-        else if (command[0].equals("PWD")) // Print working directory.
+        else if (command[0].equals("PWD") || command[0].equals("XPWD")) // Print working directory.
         {
             PWD();
         }
@@ -354,12 +426,12 @@ public class Command
                 ServerCore.send("500 Invalid parameters");
         }
 
-        else if (command[0].equals("CDUP")) // Change to parent directory.
+        else if (command[0].equals("CDUP") || command[0].equals("XCUP")) // Change to parent directory.
         {
             CDUP();
         }
 
-        else if ( command[0].equals("MKD") || command[0].equals("XMKD") ) // create a directory
+        else if ( command[0].equals("MKD") || command[0].equals("XMKD") ) // Create a directory
         {
             if(command.length > 1)
                 MKD(command[1]);
@@ -367,7 +439,7 @@ public class Command
                 ServerCore.send("500 Invalid parameters");
         }
 
-        else if ( command[0].equals("RMD") || command[0].equals("XRMD") ) // remove a directory
+        else if ( command[0].equals("RMD") || command[0].equals("XRMD") ) // Remove a directory
         {
             if(command.length > 1)
                 RMD(command[1]);
@@ -375,7 +447,7 @@ public class Command
                 ServerCore.send("500 Invalid parameters");
         }
 
-        else if (command[0].equals("RMDA")) // remove a directory tree
+        else if (command[0].equals("RMDA")) // Remove a directory tree
         {
             if(command.length > 1)
                 RMDA(command[1]);
@@ -383,14 +455,32 @@ public class Command
                 ServerCore.send("500 Invalid parameters");
         }
 
-        else if(command[0].equals("PASV"))
+        else if(command[0].equals("PASV")) // Passive mode
         {
             PASV();
         }
 
-        else if (command[0].equals("PORT")) //Specifies an address and port to which the server should connect.
+        else if (command[0].equals("PORT")) // Port
         {
             PORT(command);
+        }
+
+        else if(command[0].equals("ADAT")) // Security Data
+        {
+            ADAT();
+        }
+
+        else if(command[0].equals("ACCT")) // Account information
+        {
+            ACCT();
+        }
+
+        else if(command[0].equals("AVBL")) // Available space in directory
+        {
+            if(command.length > 1)
+                AVBL(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
 /*
@@ -399,6 +489,7 @@ public class Command
             ServerCore.send("200 Last command received correctly.");
         }
 */
+
         else
             ServerCore.send("502 Command not implemented.");
 //          ServerCore.send("500 Last command line completely unrecognized.");
