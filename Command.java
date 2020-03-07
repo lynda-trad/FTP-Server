@@ -151,7 +151,7 @@ public class Command
             ServerCore.send("553 Service interrupted. Filename is incorrect.");
     }
 
-    public static void MFCT(String[] command) // Modify a file or folder's creation date and time
+    public static void MFMT(String[] command) // Modify a file or folder's last modified date and time
     {
         String date = command[1];
         String pathname = command[2];
@@ -178,6 +178,38 @@ public class Command
             ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
     }
 
+    public static void MFCT(String[] command) // Modify a file or folder's creation date and time
+    {
+        String date = command[1];
+        String pathname = command[2];
+
+        File file = new File(pathname);
+
+        if(file.exists() && date.length() == 14)
+        {
+            int year   = Integer.valueOf(date.substring(0,3));
+            int month  = Integer.valueOf(date.substring(4,6));
+            int hour   = Integer.valueOf(date.substring(7,9));
+            int min    = Integer.valueOf(date.substring(10,11));
+            int sec    = Integer.valueOf(date.substring(12,13));
+
+            Date creationDate = new Date(year, month, hour, min, sec);
+
+            Path p = Paths.get(pathname);
+            try
+            {
+                Files.setAttribute(p, "creationTime", FileTime.fromMillis(creationDate.getTime()));
+            }
+            catch(IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            ServerCore.send("213 Creation date and time updated");
+        }
+        else
+            ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
+    }
     public static void PWD() // Print working directory
     {
         ServerCore.send("257 " + cwd + " Current working directory.");
@@ -452,7 +484,15 @@ public class Command
             if(command.length > 2)
                 MFCT(command);
             else
-                ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
+                ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
+        }
+
+        else if(command[0].equals("MFMT")) // Modify a file or folder's last modified date and time
+        {
+            if(command.length > 2)
+                MFMT(command);
+            else
+                ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
         }
 
         else if (command[0].equals("PWD") || command[0].equals("XPWD")) // Print working directory.
