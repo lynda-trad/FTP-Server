@@ -6,13 +6,13 @@ import java.io.File;
 
 public class Command
 {
-    public static String cwd = "/home/lynda/projects/serveur-ftp";
+    public static String cwd = System.getProperty("user.dir");
 
     private static String tempFilename = "";
 
     private static String username = "";
 
-    public static void CommandUser(String[] command) //	Authentication username
+    public static void USER(String[] command) // Authentication username
     {
         username = command[1];
 
@@ -26,7 +26,7 @@ public class Command
         }
     }
 
-    public static void CommandPort(String[] command)
+    public static void PORT(String[] command) // Change of port
     {
         /*
         ServerMain.serverPort = Integer.parseInt(command[1]);
@@ -36,14 +36,14 @@ public class Command
         ServerCore.send("200 Last command received correctly.");
     }
 
-    public static boolean checkPassword(String[] command)
+    public static boolean checkPassword(String[] command) // Called by PASS()
     {
         //check if password command[1] is right for username
 
         return false;
     }
 
-    public static void CommandPass(String[] command) // Authentication password
+    public static void PASS(String[] command) // Authentication password
     {
         if(checkPassword(command))
         {
@@ -57,7 +57,7 @@ public class Command
         }
     }
 
-    public static void CommandAuth(String mecanism) // Authentication/Security Mechanism
+    public static void AUTH(String mecanism) // Authentication/Security Mechanism
     {
         ServerCore.send("504 Request denied for policy reasons.");
         /*
@@ -66,7 +66,7 @@ public class Command
         */
     }
     
-    public static void CommandAppe(String filename) // Append file
+    public static void APPE(String filename) // Append file
     {
         File newF = new File(filename);
         try 
@@ -81,7 +81,7 @@ public class Command
         ServerCore.send("250 FTP file transfer started correctly.");
     }
 
-    public static void CommandDele(String filename) // Delete file
+    public static void DELE(String filename) // Delete file
     {
         File del = new File(filename);
         if(del.exists())
@@ -93,14 +93,14 @@ public class Command
             ServerCore.send("450 File not available.");
     }
 
-    public static void CommandRnfr(String pathname) // Rename file from
+    public static void RNFR(String pathname) // Rename file from
     {
         tempFilename = pathname;
+        ServerCore.send("200 Waiting for RNTO command.");
     }
 
-    public static void CommandRnto(String pathname) // Rename file to
+    public static void RNTO(String pathname) // Rename file to
     {
-        //rename the file
         File original = new File(tempFilename);
 
         if(original.exists())
@@ -110,30 +110,32 @@ public class Command
             ServerCore.send("250 FTP file transfer started correctly.");
         }
         else
+        {
             ServerCore.send("553 Service interrupted. Filename is incorrect.");
+        }
+
+        tempFilename = "";
     }
 
-    public static void CommandSize(String pathname) // Return the size of a file
+    public static void SIZE(String pathname) // Return the size of a file
     {
         File file = new File(pathname);
-        File absolute = new File(file.getAbsolutePath());
-        file.renameTo(absolute);
 
         if(file.exists())
-        {    
-            ServerCore.send(String.valueOf(file.length()));
+        {
+            ServerCore.send(pathname + " : " + String.valueOf(file.length()) + " bytes.");
             ServerCore.send("250 FTP file transfer started correctly.");
         }
         else
             ServerCore.send("553 Service interrupted. Filename is incorrect.");
     }
 
-    public static void CommandPWD() // Print working directory
+    public static void PWD() // Print working directory
     {
         ServerCore.send("257 " + cwd + " Current working directory.");
     }
 
-    public static void CommandCWD(String dir) // Change working directory
+    public static void CWD(String dir) // Change working directory
     {
         File d = new File(dir);
         if(d.exists())
@@ -145,7 +147,7 @@ public class Command
             ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
-    public static void CommandCDUP() // Change to Parent Directory
+    public static void CDUP() // Change to Parent Directory
     {
         File son = new File(cwd);
         if(son.exists())
@@ -157,14 +159,14 @@ public class Command
             ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
-    public static void CommandMKD(String newDir) // Create new directory
+    public static void MKD(String newDir) // Create new directory
     {
         File newD = new File(cwd + '/' + newDir);
         newD.mkdir();
         ServerCore.send("257 Creating new directory");
     }
 
-    public static void CommandRMD(String rmDir) // Remove a directory
+    public static void RMD(String rmDir) // Remove a directory
     {
         File dir = new File(rmDir);
         if(dir.exists())
@@ -176,7 +178,7 @@ public class Command
             ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
-    public static void CommandRMDA(String rmDira) // Remove a directory tree
+    public static void RMDA(String rmDira) // Remove a directory tree
     {
         File top = new File(rmDira);
         if(top.exists())
@@ -194,7 +196,7 @@ public class Command
             ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
-    public static void sendFilesList(String pathname)
+    public static void sendFilesList(String pathname) // Called by LIST()
     {
         try 
         {
@@ -220,19 +222,19 @@ public class Command
         }
     }
 
-    public static void CommandList()
+    public static void LIST() // Get a list of files and directories
     {
         ServerCore.send("150 Opening data canal.");
         sendFilesList(cwd);
     }
 
-    public static void CommandQuit()
+    public static void QUIT() // Quit
     {
         ServerMain.quit = true;
         ServerCore.send("221 Control canal closed by the service.");
     }
 
-    public static void CommandRetr(String filename)
+    public static void RETR(String filename) // Retrieve a file
     {
         ServerCore.send("125 Transfert starting.");
         /*
@@ -249,7 +251,7 @@ public class Command
         */
     }
     
-    public static void CommandPASV()
+    public static void PASV() // Entering passive mode
     {
         ServerCore.send("227 Entering passive mode.");
     }
@@ -260,36 +262,36 @@ public class Command
 
         if (command[0].equals("USER"))
         {
-            CommandUser(command);
+            USER(command);
         }
 
         else if (command[0].equals("PASS"))
         {
-            CommandPass(command);
+            PASS(command);
         }
         
         else if(command[0].equals("AUTH"))
         {
             if(command.length > 1)
-                CommandAuth(command[1]);
+                AUTH(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
 
         else if(command[0].equals("QUIT"))
         {
-            CommandQuit();            
+            QUIT();
         }
 
         else if (command[0].equals("LIST"))
         {
-            CommandList();
+            LIST();
         }
         
         else if (command[0].equals("RETR")) //Retrieve a copy of the file
         {
             if(command.length > 1)
-                CommandRetr(command[1]);
+                RETR(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
@@ -302,7 +304,7 @@ public class Command
         else if (command[0].equals("APPE")) // Append the file
         {
             if(command.length > 1)
-                CommandAppe(command[1]);
+                APPE(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
@@ -310,7 +312,7 @@ public class Command
         else if (command[0].equals("DELE")) // Delete the file.
         {
             if(command.length > 1)
-                CommandDele(command[1]);
+                DELE(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
@@ -318,7 +320,7 @@ public class Command
         else if(command[0].equals("RNFR")) // Rename the file (from)
         {
             if(command.length > 1)
-                CommandRnfr(command[1]);
+                RNFR(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
@@ -326,41 +328,41 @@ public class Command
         else if(command[0].equals("RNTO")) // Rename the file (to)
         {
             if(command.length > 1)
-                CommandRnto(command[1]);
+                RNTO(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
 
-        else if(command[0].equals("SIZE"))
+        else if(command[0].equals("SIZE")) // Gets the file size
         {
             if(command.length > 1)
-                CommandSize(command[1]);
+                SIZE(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
 
         else if (command[0].equals("PWD")) // Print working directory.
         {
-            CommandPWD();
+            PWD();
         }
 
         else if (command[0].equals("CWD")) // Change working directory.
         {
             if(command.length > 1)
-                CommandCWD(command[1]);
+                CWD(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
 
         else if (command[0].equals("CDUP")) // Change to parent directory.
         {
-            CommandCDUP();
+            CDUP();
         }
 
         else if ( command[0].equals("MKD") || command[0].equals("XMKD") ) // create a directory
         {
             if(command.length > 1)
-                CommandMKD(command[1]);
+                MKD(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
@@ -368,7 +370,7 @@ public class Command
         else if ( command[0].equals("RMD") || command[0].equals("XRMD") ) // remove a directory
         {
             if(command.length > 1)
-                CommandRMD(command[1]);
+                RMD(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
@@ -376,18 +378,19 @@ public class Command
         else if (command[0].equals("RMDA")) // remove a directory tree
         {
             if(command.length > 1)
-                CommandRMDA(command[1]);
+                RMDA(command[1]);
             else
                 ServerCore.send("500 Invalid parameters");
         }
 
         else if(command[0].equals("PASV"))
         {
-            CommandPASV();
+            PASV();
         }
+
         else if (command[0].equals("PORT")) //Specifies an address and port to which the server should connect.
         {
-            CommandPort(command);
+            PORT(command);
         }
 
 /*
