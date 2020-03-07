@@ -1,10 +1,12 @@
+package ftp;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.File;
 
 public class Command
 {
-    public static String cwd = "/home/lynda/test";
+    public static String cwd = "/home/lynda/projects/serveur-ftp";
 
     private static String tempFilename = "";
 
@@ -226,7 +228,7 @@ public class Command
 
     public static void CommandQuit()
     {
-        ServerMain.bye = true;
+        ServerMain.quit = true;
         ServerCore.send("221 Control canal closed by the service.");
     }
 
@@ -268,7 +270,10 @@ public class Command
         
         else if(command[0].equals("AUTH"))
         {
-            CommandAuth(command[1]);
+            if(command.length > 1)
+                CommandAuth(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if(command[0].equals("QUIT"))
@@ -283,7 +288,10 @@ public class Command
         
         else if (command[0].equals("RETR")) //Retrieve a copy of the file
         {
-            CommandRetr(command[1]);
+            if(command.length > 1)
+                CommandRetr(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
         
         else if (command[0].equals("TYPE") && command[1].equals("I"))
@@ -293,27 +301,42 @@ public class Command
    
         else if (command[0].equals("APPE")) // Append the file
         {
-            CommandAppe(command[1]);
+            if(command.length > 1)
+                CommandAppe(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if (command[0].equals("DELE")) // Delete the file.
         {
-            CommandDele(command[1]);
+            if(command.length > 1)
+                CommandDele(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if(command[0].equals("RNFR")) // Rename the file (from)
         {
-            CommandRnfr(command[1]);
+            if(command.length > 1)
+                CommandRnfr(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if(command[0].equals("RNTO")) // Rename the file (to)
         {
-            CommandRnto(command[1]);
+            if(command.length > 1)
+                CommandRnto(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if(command[0].equals("SIZE"))
         {
-            CommandSize(command[1]);
+            if(command.length > 1)
+                CommandSize(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if (command[0].equals("PWD")) // Print working directory.
@@ -323,7 +346,10 @@ public class Command
 
         else if (command[0].equals("CWD")) // Change working directory.
         {
-            CommandCWD(command[1]);
+            if(command.length > 1)
+                CommandCWD(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if (command[0].equals("CDUP")) // Change to parent directory.
@@ -333,17 +359,26 @@ public class Command
 
         else if ( command[0].equals("MKD") || command[0].equals("XMKD") ) // create a directory
         {
-            CommandMKD(command[1]);
+            if(command.length > 1)
+                CommandMKD(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if ( command[0].equals("RMD") || command[0].equals("XRMD") ) // remove a directory
         {
-            CommandRMD(command[1]);
+            if(command.length > 1)
+                CommandRMD(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if (command[0].equals("RMDA")) // remove a directory tree
         {
-            CommandRMDA(command[1]);
+            if(command.length > 1)
+                CommandRMDA(command[1]);
+            else
+                ServerCore.send("500 Invalid parameters");
         }
 
         else if(command[0].equals("PASV"))

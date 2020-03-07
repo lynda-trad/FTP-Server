@@ -1,7 +1,8 @@
+package ftp;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -35,7 +36,7 @@ public class ServerCore extends Thread
             output = new PrintWriter(client.getOutputStream(), true);
 			InitConnection();
 			
-            while (!ServerMain.bye) 
+            while (!ServerMain.quit)
             {
                 input = new BufferedReader(new InputStreamReader(client.getInputStream()));
 

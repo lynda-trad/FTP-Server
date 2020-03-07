@@ -1,3 +1,5 @@
+package ftp;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -12,7 +14,7 @@ public class ServerMain
 
     private static ArrayList<Thread> list   = new ArrayList<Thread>();
 
-    public static boolean bye = false;
+    public static boolean quit = false;
 
     public static void changePort()
     {
@@ -26,7 +28,7 @@ public class ServerMain
             ServerSocket socket = new ServerSocket(serverPort);
             System.out.println("Server listening on port " + serverPort);
 
-            while (!bye)
+            while (!quit)
             {
                 Socket client = socket.accept();
                 Thread thrd = new Thread(new ServerCore(client));
