@@ -151,7 +151,7 @@ public class Command
             ServerCore.send("553 Service interrupted. Filename is incorrect.");
     }
 
-    public static void MDTM(String pathname)
+    public static void MDTM(String pathname) // Get a file's last modified date and time
     {
         File file = new File(pathname);
 
@@ -361,7 +361,7 @@ public class Command
     public static void NLST(String pathname) // Get a list of file names in a specified directory.
     {
         ServerCore.send("150 Opening data canal.");
-        sendLIST(pathname);
+        sendNLST(pathname);
     }
 
     public static void QUIT() // Quit
@@ -408,17 +408,17 @@ public class Command
     {
         String[] command = commandString.split(" ");
 
-        if (command[0].equals("USER"))
+        if (command[0].equals("USER")) // Authentication username
         {
             USER(command);
         }
 
-        else if (command[0].equals("PASS"))
+        else if (command[0].equals("PASS")) // Authentication password
         {
             PASS(command);
         }
         
-        else if(command[0].equals("AUTH"))
+        else if(command[0].equals("AUTH")) // Authentication / Security Mechanism
         {
             if(command.length > 1)
                 AUTH(command[1]);
@@ -426,12 +426,12 @@ public class Command
                 ServerCore.send("500 Invalid parameters");
         }
 
-        else if(command[0].equals("QUIT"))
+        else if(command[0].equals("QUIT")) // Quit
         {
             QUIT();
         }
 
-        else if (command[0].equals("LIST"))
+        else if (command[0].equals("LIST")) // Returns information of a file or directory if specified, else information of the current working directory is returned.
         {
             if(command.length > 1)
                 LIST(command[1]);
@@ -439,7 +439,7 @@ public class Command
                 LIST(cwd);
         }
 
-        else if(command[0].equals("NLST"))
+        else if(command[0].equals("NLST")) // Get a list of file names in a specified directory.
         {
             if(command.length > 1)
                 NLST(command[1]);
@@ -500,7 +500,7 @@ public class Command
                 ServerCore.send("500 Invalid parameters");
         }
 
-        else if(command[0].equals("MDTM"))
+        else if(command[0].equals("MDTM")) // Get a file's last modified date and time
         {
             if(command.length > 1)
             {
