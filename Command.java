@@ -3,12 +3,10 @@ package ftp;
 import javax.swing.*;
 import java.io.*;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.FileTime;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
 import java.util.Date;
+import java.util.Set;
 
 public class Command
 {
@@ -99,22 +97,86 @@ public class Command
         ServerCore.send("221 Control canal closed by the service.");
     }
 
-    public static void sendLIST(String pathname) // Called by LIST()
+    private static String fileRights(Path path)
+    {
+        String rights = "";
+
+        try
+        {
+            PosixFileAttributeView posixView = Files.getFileAttributeView(path, PosixFileAttributeView.class);
+
+            PosixFileAttributes attributes = posixView.readAttributes();
+            Set<PosixFilePermission> permissions = attributes.permissions();
+
+            rights += "-" + PosixFilePermissions.toString(permissions);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return rights;
+    }
+    private static String sendInfo(File f) // Called by sendLIST
+    {
+        String info = "";
+        Path path = Paths.get(f.getAbsolutePath());
+
+        try
+        {
+            //rights
+            info += fileRights(path);
+
+            // links
+            info += " " + Files.getAttribute(path, "unix:nlink");
+
+            // user
+            UserPrincipal owner = Files.getOwner(path);
+            info = info + " " + owner ;
+
+            // group owner
+            GroupPrincipal group = Files.readAttributes(f.toPath(), PosixFileAttributes.class, LinkOption.NOFOLLOW_LINKS).group();
+            info += " " + group ;
+
+            //size
+            info += " " + String.valueOf(f.length());
+
+            //date
+            info += " " + new Date(f.lastModified());
+
+            //pathname
+            info += " " + f.getAbsolutePath();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return info;
+    }
+
+    private static void sendLIST(String pathname) // Called by LIST()
     {
         try
         {
             File f = new File(pathname);
-            if(f.exists())
+            if(f.exists() && !f.isFile())
             {
                 File[] fileList = f.listFiles();
 
                 for(File path:fileList)
                 {
-                    ServerCore.send(pathname + '/' + path.getName());
-                    System.out.println(pathname + '/' + path.getName());
+                    if (path.isFile())
+                    {
+                        ServerCore.send(sendInfo(path));
+                    }
                 }
 
                 ServerCore.send("226 Transfer complete.");
+            }
+            else if(f.exists() && f.isFile())
+            {
+                ServerCore.send(sendInfo(f));
             }
             else
                 ServerCore.send("450 File not available.");
@@ -131,7 +193,7 @@ public class Command
         sendLIST(pathname);
     }
 
-    public static void sendNLST(String pathname) // Called by NLST()
+    private static void sendNLST(String pathname) // Called by NLST()
     {
         try
         {
@@ -145,7 +207,6 @@ public class Command
                     if (path.isFile())
                     {
                         ServerCore.send(pathname + '/' + path.getName());
-                        System.out.println(pathname + '/' + path.getName());
                     }
                 }
 
@@ -579,7 +640,7 @@ public class Command
                 if(command.length > 1)
                     NLST(command[1]);
                 else
-                    ServerCore.send("500 Invalid parameters");
+                    NLST(cwd);
             break;
 
             case "MLSD": // Lists the contents of a directory if a directory is named.
