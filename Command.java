@@ -1,5 +1,6 @@
 package ftp;
 
+import javax.swing.*;
 import java.io.*;
 
 import java.nio.file.Files;
@@ -16,6 +17,8 @@ public class Command
     private static String tempFilename = "";
 
     private static String username = "";
+
+    private static String downloadFolder = "";
 
     public static void USER(String[] command) // Authentication username
     {
@@ -198,25 +201,35 @@ public class Command
         String[] path = filename.split("/");
         String file = path[path.length - 1];
 
-        try
+        File source = new File(filename);
+        if(source.isFile())
         {
-            InputStream src = new BufferedInputStream(new FileInputStream(filename));
-
-            String download = "home/lynda/Downloads/" + file;
-            Path dest = Paths.get(download);
-
             try
             {
-                Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+                InputStream src = new BufferedInputStream(new FileInputStream(filename));
+
+                String download = downloadFolder + '/' + file;
+                Path dest = Paths.get(download);
+
+                try
+                {
+                    Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                    ServerCore.send("425 Error while opening data canal : could not copy to destination folder.");
+                }
             }
-            catch (IOException e)
+            catch (FileNotFoundException e)
             {
                 e.printStackTrace();
+                ServerCore.send("425 Error while opening data canal : source does not exist.");
             }
         }
-        catch (FileNotFoundException e)
+        else
         {
-            e.printStackTrace();
+            ServerCore.send("425 Error while opening data canal : source is not a file.");
         }
 
         ServerCore.send("226 Closing data canal.");
@@ -571,10 +584,13 @@ public class Command
             break;
 
             case "RETR": //Retrieve a copy of the file
-                if(command.length > 1)
+                if(command.length > 2)
+                {
+                    downloadFolder = command[2];
                     RETR(command[1]);
+                }
                 else
-                    ServerCore.send("500 Invalid parameters");
+                    ServerCore.send("500 Invalid parameters : RETR /src /dest");
             break;
 
             case "APPE": // Append the file
