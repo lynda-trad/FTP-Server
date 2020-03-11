@@ -97,18 +97,24 @@ public class Command
         ServerCore.send("221 Control canal closed by the service.");
     }
 
-    private static String fileRights(Path path)
+    private static String fileRights(File f)
     {
         String rights = "";
+        Path path = Paths.get(f.getAbsolutePath());
 
         try
         {
+            if(f.isFile())
+                rights += "-";
+            else
+                rights += "d";
+
             PosixFileAttributeView posixView = Files.getFileAttributeView(path, PosixFileAttributeView.class);
 
             PosixFileAttributes attributes = posixView.readAttributes();
             Set<PosixFilePermission> permissions = attributes.permissions();
 
-            rights += "-" + PosixFilePermissions.toString(permissions);
+            rights += PosixFilePermissions.toString(permissions);
         }
         catch (IOException e)
         {
@@ -125,7 +131,7 @@ public class Command
         try
         {
             //rights
-            info += fileRights(path);
+            info += fileRights(f);
 
             // links
             info += " " + Files.getAttribute(path, "unix:nlink");
@@ -166,10 +172,7 @@ public class Command
 
                 for(File path:fileList)
                 {
-                    if (path.isFile())
-                    {
-                        ServerCore.send(sendInfo(path));
-                    }
+                    ServerCore.send(sendInfo(path));
                 }
 
                 ServerCore.send("226 Transfer complete.");
