@@ -1,13 +1,11 @@
 package ftp;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.File;
+import java.io.*;
 
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.util.Date;
 
@@ -196,6 +194,33 @@ public class Command
     public static void RETR(String filename) // Retrieve a file
     {
         ServerCore.send("125 Transfert starting.");
+
+        String[] path = filename.split("/");
+        String file = path[path.length - 1];
+
+        try
+        {
+            InputStream src = new BufferedInputStream(new FileInputStream(filename));
+
+            String download = "home/lynda/Downloads/" + file;
+            Path dest = Paths.get(download);
+
+            try
+            {
+                Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
+        ServerCore.send("226 Closing data canal.");
+
         /*
         return "150 File status reply.";
 
