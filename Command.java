@@ -346,13 +346,14 @@ public class Command
 
         if(file.exists() && date.length() == 14)
         {
-            int year   = Integer.valueOf(date.substring(0,3));
-            int month  = Integer.valueOf(date.substring(4,6));
-            int hour   = Integer.valueOf(date.substring(7,9));
-            int min    = Integer.valueOf(date.substring(10,11));
-            int sec    = Integer.valueOf(date.substring(12,13));
+            int year   = Integer.valueOf(date.charAt(3) + date.charAt(2) + date.charAt(1) + date.charAt(0)) - 76;
+            int month  = Integer.valueOf(date.substring(4,5) + date.substring(3,4))  + 1;
+            int day    = Integer.valueOf(date.substring(6,7) + date.substring(5,6))  - 2;
+            int hour   = Integer.valueOf(date.substring(8,9) + date.substring(7,8))     ;
+            int min    = Integer.valueOf(date.substring(10,11) + date.substring(9,10))  ;
+            int sec    = Integer.valueOf(date.substring(12,13) + date.substring(11,12)) ;
 
-            Date creationDate = new Date(year, month, hour, min, sec);
+            Date creationDate = new Date(year, month, day, hour, min, sec);
 
             Path p = Paths.get(pathname);
             try
@@ -379,13 +380,14 @@ public class Command
 
         if(file.exists() && date.length() == 14)
         {
-            int year   = Integer.valueOf(date.substring(0,3));
-            int month  = Integer.valueOf(date.substring(4,6));
-            int hour   = Integer.valueOf(date.substring(7,9));
-            int min    = Integer.valueOf(date.substring(10,11));
-            int sec    = Integer.valueOf(date.substring(12,13));
+            int year   = Integer.valueOf(date.charAt(3) + date.charAt(2) + date.charAt(1) + date.charAt(0)) - 76;
+            int month  = Integer.valueOf(date.substring(4,5) + date.substring(3,4))  + 1;
+            int day    = Integer.valueOf(date.substring(6,7) + date.substring(5,6))  - 2;
+            int hour   = Integer.valueOf(date.substring(8,9) + date.substring(7,8))     ;
+            int min    = Integer.valueOf(date.substring(10,11) + date.substring(9,10))  ;
+            int sec    = Integer.valueOf(date.substring(12,13) + date.substring(11,12)) ;
 
-            Date newDate = new Date(year, month, hour, min, sec);
+            Date newDate = new Date(year, month, day, hour, min, sec);
 
             long time = newDate.getTime();
 
@@ -632,14 +634,14 @@ public class Command
                 if(command.length > 1)
                     MDTM(command[1]);
                 else
-                    ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
+                    ServerCore.send("500 Invalid parameters.");
             break;
 
             case "MFCT": // Modify a file or folder's creation date and time
                 if(command.length > 2)
                     MFCT(command);
                 else
-                    ServerCore.send("500 Invalid parameters. MFCT has this format : MFMT YYYYMMDDHHMMSS path");
+                    ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
             break;
 
             case "MFMT": // Modify a file or folder's last modified date and time

@@ -26,7 +26,7 @@ public class ServerCore extends Thread
     private void InitConnection()
     {
         send("220 Welcome.");
-        System.out.print("Connection accepted");
+        System.out.println("Connection accepted");
     }
 
     public void run()
