@@ -186,12 +186,11 @@ public class Command
 
       */
 
-        ServerCore.send("150 initial");
+        //ServerCore.send("150 initial");
 
-        //
+        LIST(pathname);
 
-        ServerCore.send("226 final");
-
+        //ServerCore.send("226 final");
     }
 
     public static void RETR(String filename) // Retrieve a file
