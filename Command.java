@@ -511,6 +511,11 @@ public class Command
             ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
+    public static void CCC()
+    {
+        ServerCore.send("\033[H\033[2J");
+    }
+
     public static void run(String commandString)
     {
         String[] command = commandString.split(" ");
@@ -702,6 +707,10 @@ public class Command
                     AVBL(command[1]);
                 else
                     ServerCore.send("500 Invalid parameters");
+            break;
+
+            case "CCC":
+                CCC();
             break;
 
 /*
