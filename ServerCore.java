@@ -45,13 +45,6 @@ public class ServerCore extends Thread
                 System.out.println("Read command : " + inString+ '\n');
 
                 Command.run(inString);
-                /*
-                String outString = Command.run(inString, output);
-                System.out.println("Server sending:" + outString + '\n');
-
-                output.print(outString + "\r\n");
-                output.flush();
-                */
             }
 
 		} 

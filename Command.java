@@ -1,10 +1,10 @@
 package ftp;
 
-import javax.swing.*;
 import java.io.*;
 
 import java.nio.file.*;
 import java.nio.file.attribute.*;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
 
@@ -39,7 +39,7 @@ public class Command
 
     public static boolean checkPassword(String[] command) // Called by PASS()
     {
-        //check if password command[1] is right for username
+        //checks if password command[1] is right for username
 
         return false;
     }
@@ -95,6 +95,7 @@ public class Command
     {
         ServerMain.quit = true;
         ServerCore.send("221 Control canal closed by the service.");
+        ServerCore.send("You can close this window.");
     }
 
     private static String fileRights(File f)
@@ -123,6 +124,7 @@ public class Command
 
         return rights;
     }
+
     private static String sendInfo(File f) // Called by sendLIST
     {
         String info = "";
@@ -232,24 +234,6 @@ public class Command
 
     public static void MLSD(String pathname) // Lists the contents of a directory if a directory is named.
     {
-        /*
-        Standard Facts
-
-   This document defines a standard set of facts as follows:
-
-      size       -- Size in octets
-      modify     -- Last modification time
-      create     -- Creation time
-      type       -- Entry type
-      unique     -- Unique id of file/directory
-      perm       -- File permissions, whether read, write, execute is
-                    allowed for the login id.
-      lang       -- Language of the file name per IANA [11] registry.
-      media-type -- MIME media-type of file contents per IANA registry.
-      charset    -- Character set per IANA registry (if not UTF-8)
-
-      */
-
         //ServerCore.send("150 initial");
 
         LIST(pathname);
@@ -296,19 +280,6 @@ public class Command
         }
 
         ServerCore.send("226 Closing data canal.");
-
-        /*
-        return "150 File status reply.";
-
-        // Ending
-        return "226 Closing data canal.";
-        return "250 File service ending.";
-
-        // Errors
-        return "425 Error while opening data canal.";
-        return "426 Connection closed. Transfert interrupted.";
-        return "451 Service interrupted. Local error.";
-        */
     }
 
     public static void APPE(String filename) // Append file
@@ -409,19 +380,21 @@ public class Command
 
         if(file.exists() && date.length() == 14)
         {
-            int year   = Integer.valueOf(date.charAt(3) + date.charAt(2) + date.charAt(1) + date.charAt(0)) - 76;
+            int year   = Integer.valueOf(date.charAt(3) + date.charAt(2) + date.charAt(1) + date.charAt(0)) - 86;
             int month  = Integer.valueOf(date.substring(4,5) + date.substring(3,4))  + 1;
             int day    = Integer.valueOf(date.substring(6,7) + date.substring(5,6))  - 2;
-            int hour   = Integer.valueOf(date.substring(8,9) + date.substring(7,8))     ;
+            int hour   = Integer.valueOf(date.substring(8,9) + date.substring(7,8))     + 1 ;
             int min    = Integer.valueOf(date.substring(10,11) + date.substring(9,10))  ;
             int sec    = Integer.valueOf(date.substring(12,13) + date.substring(11,12)) ;
 
-            Date creationDate = new Date(year, month, day, hour, min, sec);
+            Calendar creationDate = Calendar.getInstance();
+            creationDate.set(year + 1900, month, day, hour, min);
+            creationDate.set(creationDate.SECOND, sec);
 
             Path p = Paths.get(pathname);
             try
             {
-                Files.setAttribute(p, "creationTime", FileTime.fromMillis(creationDate.getTime()));
+                Files.setAttribute(p, "creationTime", FileTime.fromMillis(creationDate.getTimeInMillis()));
             }
             catch(IOException e)
             {
@@ -450,16 +423,16 @@ public class Command
             int min    = Integer.valueOf(date.substring(10,11) + date.substring(9,10))  ;
             int sec    = Integer.valueOf(date.substring(12,13) + date.substring(11,12)) ;
 
-            Date newDate = new Date(year, month, day, hour, min, sec);
+            Calendar newDate = Calendar.getInstance();
+            newDate.set(year + 1900, month, day, hour, min);
+            newDate.set(newDate.SECOND, sec);
 
-            long time = newDate.getTime();
-
-            file.setLastModified(time);
+            file.setLastModified(newDate.getTimeInMillis());
 
             ServerCore.send("213 Last modified date and time updated");
         }
         else
-            ServerCore.send("500 Invalid parameters. MFCT has this format : MFCT YYYYMMDDHHMMSS path");
+            ServerCore.send("500 Invalid parameters. MFMT has this format : MFMT YYYYMMDDHHMMSS path");
     }
 
     public static void PWD() // Print working directory
@@ -575,7 +548,7 @@ public class Command
             ServerCore.send("553 Service interrupted. Pathname is incorrect.");
     }
 
-    public static void CCC()
+    public static void CCC() // Clear the command channel
     {
         ServerCore.send("\033[H\033[2J");
     }
@@ -773,7 +746,7 @@ public class Command
                     ServerCore.send("500 Invalid parameters");
             break;
 
-            case "CCC":
+            case "CCC": // Clear the command channel
                 CCC();
             break;
 
